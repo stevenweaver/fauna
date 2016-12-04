@@ -191,16 +191,27 @@ class download(object):
             raise Exception("Date interval must be in YYYY-MM-DD format with all values defined", older_date, newer_date)
         return(older_date.upper(), newer_date.upper())
 
-    def resolve_duplicates(self, sequences, resolve_method=None, **kwargs):
+
+    def resolve_duplicates(self, sequences, **kwargs):
         strain_locus_to_doc = {doc['strain']+doc['locus']: doc for doc in sequences}
-        if resolve_method == "choose_longest":
-            print("Resolving duplicate strains and locus by picking the longest sequence")
-            for doc in sequences:
-                if doc['strain']+doc['locus'] in strain_locus_to_doc:
-                    if self.longer_sequence(doc['sequence'], strain_locus_to_doc[doc['strain']+doc['locus']]):
-                        strain_locus_to_doc[doc['strain']+doc['locus']] = doc
-                else:
-                    strain_locus_to_doc[doc['strain']] = doc
+        method_name = kwargs['resolve_method']
+        print("Resolving duplicate strains and locus by '{}'".format(method_name))
+
+        resolve = getattr(download, method_name)
+        for doc in sequences:
+            strain_locus = doc['strain'] + doc['locus']
+            if strain_locus in strain_locus_to_doc:
+                strain_locus_to_doc[strain_locus] = resolve(doc['sequence'], strain_locus_to_doc[strain_locus])
+            else:
+                strain_locus_to_doc[doc['strain']] = doc
+
+        # if resolve_method == "choose_longest":
+        #     for doc in sequences:
+        #         if doc['strain']+doc['locus'] in strain_locus_to_doc:
+        #             if self.longer_sequence(doc['sequence'], strain_locus_to_doc[doc['strain']+doc['locus']]):
+        #                 strain_locus_to_doc[doc['strain']+doc['locus']] = doc
+        #         else:
+        #             strain_locus_to_doc[doc['strain']] = doc
         return list(strain_locus_to_doc.values())
 
     def longer_sequence(self, long_seq, short_seq):
