@@ -201,12 +201,16 @@ class download(object):
         for doc in sequences:
             strain_locus = doc['strain'] + doc['locus']
             if strain_locus in strain_locus_to_doc:
-                strain_locus_to_doc[strain_locus] = resolve(doc, strain_locus_to_doc[strain_locus])
+                if longer(doc, strain_locus_to_doc[strain_locus]):
+                    strain_locus_to_doc[strain_locus] = doc
             else:
                 print('in the else loop')
                 strain_locus_to_doc[doc['strain']] = doc
 
         return list(strain_locus_to_doc.values())
+
+    def longer(self, first_seq, second_seq):
+        return len(first_seq['sequence']) > len(second_seq)
 
     def choose_longest(self, first_seq, second_seq):
         '''
