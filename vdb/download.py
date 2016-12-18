@@ -29,7 +29,7 @@ def get_parser():
 
     def duplicate_resolver(resolve_method):
         method = str(resolve_method)
-        accepted_methods = ('keep_duplicates', 'choose_longest')
+        accepted_methods = set(['keep_duplicates', 'choose_longest', 'choose_recently_added'])
         if method not in accepted_methods:
             msg = '"{}" is not a supported duplicate resolve method'.format(method)
             raise argparse.ArgumentTypeError(msg)
@@ -193,32 +193,36 @@ class download(object):
 
 
     def resolve_duplicates(self, sequences, **kwargs):
-        strain_locus_to_doc = {doc['strain']+doc['locus']: doc for doc in sequences}
         method_name = kwargs['resolve_method']
+        strain_locus_to_doc = {doc['strain']+doc['locus']: doc for doc in sequences}
         print("Resolving duplicate strains and locus by '{}'".format(method_name))
 
-        resolve = getattr(download, method_name)
+        resolve = getattr(self, method_name)
         for doc in sequences:
             strain_locus = doc['strain'] + doc['locus']
             if strain_locus in strain_locus_to_doc:
-                strain_locus_to_doc[strain_locus] = resolve(doc['sequence'], strain_locus_to_doc[strain_locus])
+                strain_locus_to_doc[strain_locus] = resolve(doc, strain_locus_to_doc[strain_locus])
             else:
+                print('in the else loop')
                 strain_locus_to_doc[doc['strain']] = doc
 
-        # if resolve_method == "choose_longest":
-        #     for doc in sequences:
-        #         if doc['strain']+doc['locus'] in strain_locus_to_doc:
-        #             if self.longer_sequence(doc['sequence'], strain_locus_to_doc[doc['strain']+doc['locus']]):
-        #                 strain_locus_to_doc[doc['strain']+doc['locus']] = doc
-        #         else:
-        #             strain_locus_to_doc[doc['strain']] = doc
         return list(strain_locus_to_doc.values())
 
-    def longer_sequence(self, long_seq, short_seq):
+    def choose_longest(self, first_seq, second_seq):
         '''
-        :return: true if long_seq is longer than short_seq
+        :return: longer sequence
         '''
-        return len(long_seq) > len(short_seq)
+        if len(first_seq['sequence']) > len(second_seq):
+            print('chose this as longer!')
+            return first_seq
+        return second_seq
+
+    def choose_recently_added(self, first_seq, second_seq):
+        '''
+        :return: more recently added seq
+        #TODO implement this function
+        '''
+        return first_seq
 
     def write_json(self, data, fname, indent=1):
         '''
