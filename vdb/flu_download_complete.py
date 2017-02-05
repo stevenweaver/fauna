@@ -1,3 +1,6 @@
+# use as
+# run vdb/flu_download_complete.py --virus flu --select lineage:seasonal_h3n2  --fstem h3n2
+
 import os,datetime
 from download import download
 from download import get_parser
