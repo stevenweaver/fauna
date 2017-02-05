@@ -93,7 +93,11 @@ class download(object):
         if groupings is not None and len(groupings)>0:
             for group in groupings:
                 result = group.split(':')
-                selections.append((result[0].lower(), result[1].lower().split(',')))
+                try:
+                    selections.append((result[0].lower(), map(int, result[1].lower().split(','))))
+                except:
+                    selections.append((result[0].lower(), result[1].lower().split(',')))
+
         return selections
 
     def parse_years_back_argument(self, argument):
@@ -178,10 +182,11 @@ class download(object):
         return(older_date.upper(), newer_date.upper())
 
     def resolve_duplicates(self, sequences, pick_longest=True, **kwargs):
-        strain_locus_to_doc = {doc['strain']+doc['locus']: doc for doc in sequences}
+        tmp_seqs = filter(lambda x:x is not None, sequences)
+        strain_locus_to_doc = {doc['strain']+doc['locus']: doc for doc in tmp_seqs}
         if pick_longest:
             print("Resolving duplicate strains and locus by picking the longest sequence")
-            for doc in sequences:
+            for doc in tmp_seqs:
                 if doc['strain']+doc['locus'] in strain_locus_to_doc:
                     if self.longer_sequence(doc['sequence'], strain_locus_to_doc[doc['strain']+doc['locus']]):
                         strain_locus_to_doc[doc['strain']+doc['locus']] = doc
