@@ -1,3 +1,4 @@
+# run tdb/download.py -db tdb -v flu --subtype h1n1pdm --ftype augur
 import os, json, datetime, sys
 import rethinkdb as r
 sys.path.append('')  # need to import from base
@@ -151,7 +152,7 @@ class download(object):
             if meas['virus_strain'] in HI_titer_count.keys():
                 HI_titer_count[meas['virus_strain']] = HI_titer_count[meas['virus_strain']] + 1
             else:
-                HI_titer_count[meas['virus_strain']] = 1                
+                HI_titer_count[meas['virus_strain']] = 1
         return HI_titer_count
 
 if __name__=="__main__":
